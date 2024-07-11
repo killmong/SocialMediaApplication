@@ -20,12 +20,6 @@ const userSchema = new Schema(
     avatar: {
       type: String,
     },
-    age: {
-      type: Date,
-    },
-    gender: {
-      type: String,
-    },
     bio: {
       type: String,
     },

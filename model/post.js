@@ -1,12 +1,19 @@
 const mongoose = require("mongoose");
 const { Schema, Types } = mongoose;
-
+  
 const postSchema = new Schema({
-  userid: {
+  user_id: {
     type: Types.ObjectId,
+    ref : 'User'
+  },
+  description: {
+    type: String,
     required: true,
   },
-  timestamps: true,
-});
-
+  imageUrl:{
+    type: String,
+    default :"no photo"
+  }
+  },
+  { timestamps: true }); 
 module.exports = mongoose.model("Post", postSchema);

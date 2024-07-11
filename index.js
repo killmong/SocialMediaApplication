@@ -2,35 +2,37 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const user = require("./routes/user");
-const cors = require("cors");
+const post = require("./routes/post")
 const app = express();
-const port = process.env.PORT || 3000;
+const cookieParser = require('cookie-parser');
+const port = process.env.PORT;
+const cors = require('cors')
 
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Origin",'http://localhost:3000');
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 });
+
+// Use cookie-parser middleware
+app.use(cookieParser());
+app.use(cors())
+
+
 // Middleware to parse JSON bodies
 app.use(express.json());
 
 // Routes
 app.use("/api", user);
-
-
-// Define your API routes
-app.post('/user/signup', (req, res) => {
-  // Your signup logic here
-  res.json({ message: 'Signup successful' });
-});
-// Define your API routes
+app.use("/api", post);
 
 // Root Route
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
 
-// MongoDB connection
+
+//MongoDB connection
 mongoose
   .connect(process.env.SNOWFLAKE_URL)
   .then(() => console.log("Connected to MongoDB"))

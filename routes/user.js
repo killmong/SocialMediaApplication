@@ -1,7 +1,12 @@
+require("dotenv").config();
 const express = require("express");
 const User = require("../model/user");
 const router = express.Router();
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const jwtToken = process.env.Jwt_token;
+
+
 // Post Method
 router.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
@@ -33,7 +38,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // Get all Method
-router.get("/getAll", async (req, res) => {
+router.get("/get/user", async (req, res) => {
   try {
     const dataToShow = await User.find();
     if (!dataToShow || dataToShow.length === 0) {
@@ -48,7 +53,7 @@ router.get("/getAll", async (req, res) => {
 });
 
 // Get by ID Method
-router.get("/getOne/:id", async (req, res) => {
+router.get("/getuser/:id", async (req, res) => {
   const id = req.params.id;
   try {
     const dataToShow = await User.findById(id);
@@ -65,14 +70,27 @@ router.get("/getOne/:id", async (req, res) => {
 
 // Update by ID Method
 router.patch("/update/:id", async (req, res) => {
+  const { id } = req.params;
+  const { username, avatar } = req.body;
+
+  // Validate the new username
+  if (username) {
+    const userExists = await User.findOne({ username: username });
+    if (userExists) {
+      return res.status(422).json({ error: "Username already exists" });
+    }
+  }
+
   try {
-    const id = req.params.id;
-    const updatedData = req.body;
+    const updatedData = {};
+    if (username) updatedData.username = username;
+    if (avatar) updatedData.avatar = avatar;
+
     const options = { new: true };
 
     const result = await User.findByIdAndUpdate(id, updatedData, options);
     if (!result) {
-      return res.status(404).json({ message: "Data not found" });
+      return res.status(404).json({ message: "User not found" });
     }
     res.status(200).json(result);
   } catch (error) {
@@ -98,12 +116,13 @@ router.delete("/delete/:id", async (req, res) => {
   }
 });
 
-// for signin
 router.post("/signin", async (req, res) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(422).json({ error: "Please provide both email and password" });
+    return res
+      .status(422)
+      .json({ error: "Please provide both email and password" });
   }
 
   try {
@@ -120,14 +139,25 @@ router.post("/signin", async (req, res) => {
     }
 
     // JWT token generation
-
-    // Return success response with token
-    res.status(200).json({
-      message: "Signin successful",
-      userId: savedUser._id
+    const token = jwt.sign({ _id: savedUser._id }, jwtToken, {
+      expiresIn: "1h",
     });
+    res.cookie("token", token, {
+      httpOnly: true,
+      maxAge: 36000, // 1 hour
+    });
+    res.status(200).json({ message: "Signin successful", token });
+    
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
+
+
+//signout
+router.get("/signout", (req, res) => {
+  res.clearCookie('token');
+  res.status(200).json({ message: "Signout successful" });
+});
+
 module.exports = router;
