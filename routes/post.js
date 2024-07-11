@@ -6,14 +6,15 @@ const signin = require('../middleware/signin');
 // Create a new post
 router.post('/createPost', signin, async (req, res) => {
   try {
-    const { description, imageUrl } = req.body;
-    if (!description || imageUrl) {
+    const { description, image } = req.body;
+    console.log(description,image)
+    if (!description ) {
       return res.status(400).json({ error: 'Please add all the fields' });
     }
     const user = req.user;
     const post = new Post({
       description,
-      imageUrl,
+      imageUrl :image,
       user_id: user._id,
     });
     post.save().then((result) =>
@@ -27,5 +28,16 @@ router.post('/createPost', signin, async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+
+//get posts 
+router.get('/getPosts', signin,async (req, res) => {
+  Post.find()
+  .sort({ createdAt: -1 }) 
+  .populate("user_id","_id username") //to get username populate
+   .then(posts=>res.json(posts))
+  .catch(err=>console.log(err))
+
+})
 
 module.exports = router;

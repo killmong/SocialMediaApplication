@@ -4,6 +4,7 @@ const User = require("../model/user");
 const router = express.Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const signin = require("../middleware/signin");
 const jwtToken = process.env.Jwt_token;
 
 
@@ -38,7 +39,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // Get all Method
-router.get("/get/user", async (req, res) => {
+router.get("/get/user",signin, async (req, res) => {
   try {
     const dataToShow = await User.find();
     if (!dataToShow || dataToShow.length === 0) {
@@ -69,9 +70,9 @@ router.get("/getuser/:id", async (req, res) => {
 });
 
 // Update by ID Method
-router.patch("/update/:id", async (req, res) => {
+router.patch("/user/update/:id", async (req, res) => {
   const { id } = req.params;
-  const { username, avatar } = req.body;
+  const { username, avatar, bio, gender } = req.body;
 
   // Validate the new username
   if (username) {
@@ -85,6 +86,8 @@ router.patch("/update/:id", async (req, res) => {
     const updatedData = {};
     if (username) updatedData.username = username;
     if (avatar) updatedData.avatar = avatar;
+    if (bio) updatedData.bio = bio;
+    if (gender) updatedData.gender = gender;
 
     const options = { new: true };
 
@@ -98,9 +101,7 @@ router.patch("/update/:id", async (req, res) => {
       message: error.message,
     });
   }
-});
-
-// Delete by ID Method
+})// Delete by ID Method
 router.delete("/delete/:id", async (req, res) => {
   try {
     const id = req.params.id;

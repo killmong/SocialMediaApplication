@@ -23,6 +23,10 @@ const userSchema = new Schema(
     bio: {
       type: String,
     },
+    gender:{
+      type: String,
+      default : 'Prfer not to say'
+    }
   },
   {
     timestamps: true,
