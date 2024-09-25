@@ -2,22 +2,25 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const user = require("./routes/user");
-const post = require("./routes/post")
+const post = require("./routes/post");
 const app = express();
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 const port = process.env.PORT;
-const cors = require('cors')
+const cors = require("cors");
+const story = require("./model/story");
 
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin",'http://localhost:3000');
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
   next();
 });
 
 // Use cookie-parser middleware
 app.use(cookieParser());
-app.use(cors())
-
+app.use(cors());
 
 // Middleware to parse JSON bodies
 app.use(express.json());
@@ -25,12 +28,12 @@ app.use(express.json());
 // Routes
 app.use("/api", user);
 app.use("/api", post);
+app.use("/api",story);
 
 // Root Route
 app.get("/", (req, res) => {
   res.send("Hello World");
 });
-
 
 //MongoDB connection
 mongoose

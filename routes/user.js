@@ -39,7 +39,7 @@ router.post("/signup", async (req, res) => {
 });
 
 // Get all Method
-router.get("/get/user",signin, async (req, res) => {
+router.get("/get/user", async (req, res) => {
   try {
     const dataToShow = await User.find();
     if (!dataToShow || dataToShow.length === 0) {
@@ -70,38 +70,37 @@ router.get("/getuser/:id", async (req, res) => {
 });
 
 // Update by ID Method
-router.patch("/user/update/:id", async (req, res) => {
+router.patch("/user/update/:id", signin, async (req, res) => {
   const { id } = req.params;
-  const { username, avatar, bio, gender } = req.body;
-
-  // Validate the new username
-  if (username) {
-    const userExists = await User.findOne({ username: username });
-    if (userExists) {
-      return res.status(422).json({ error: "Username already exists" });
-    }
-  }
+  const { bio, username, gender, profilePic } = req.body;
 
   try {
-    const updatedData = {};
-    if (username) updatedData.username = username;
-    if (avatar) updatedData.avatar = avatar;
-    if (bio) updatedData.bio = bio;
-    if (gender) updatedData.gender = gender;
+    // Find the user by ID
+    const user = await User.findById(id);
 
-    const options = { new: true };
-
-    const result = await User.findByIdAndUpdate(id, updatedData, options);
-    if (!result) {
-      return res.status(404).json({ message: "User not found" });
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
     }
-    res.status(200).json(result);
-  } catch (error) {
-    res.status(400).json({
-      message: error.message,
-    });
+
+    // Update user profile fields
+    user.bio = bio;
+    user.username = username;
+    user.gender = gender;
+    user.profilePic = profilePic;
+
+    // Save updated user data
+    await user.save();
+
+    res.json({ user, message: "Profile updated successfully" });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).json({ error: "Server Error" });
   }
-})// Delete by ID Method
+});
+
+
+
+// Delete by ID Method
 router.delete("/delete/:id", async (req, res) => {
   try {
     const id = req.params.id;
